@@ -86,7 +86,7 @@ jobs:
         echo "Displaying crave binary location(s)"
         whereis crave
         echo "Displaying ldd output: "
-         ldd $(whereis crave)
+         ldd $(whereis crave) || true
       env:
         CRAVE_USERNAME: ${{  secrets.CRAVE_USERNAME  }}
         CRAVE_TOKEN: ${{  secrets.CRAVE_TOKEN  }}
