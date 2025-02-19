@@ -8,6 +8,8 @@
 name: AppImage Builder
 on:
   workflow_dispatch:
+  push:
+    branches: main
 jobs:
   prepare:
     name: Prepare for Building
