@@ -2,7 +2,7 @@
 Type=Application
 Name=Crave
 Exec=crave
-icon=bolt
+Icon=bolt
 Categories=Development;Network;
 Terminal=true
 StartupWMClass=crave
