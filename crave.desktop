@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Crave
+Exec=crave
+Categories=Development;Network;
+Terminal=true
+StartupWMClass=crave
