@@ -81,7 +81,7 @@ jobs:
           sudo ln -sf /home/${USER}/bin/crave /usr/bin/crave
           envsubst < ${PWD}/crave.conf.sample >> ${PWD}/crave.conf
           rm -rf ${PWD}/crave.conf.sample
-          cp crave.conf $PROJECTFOLDER
+          #cp crave.conf $PROJECTFOLDER
         fi
         echo "Displaying crave binary location(s)"
         whereis crave
