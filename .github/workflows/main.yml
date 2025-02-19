@@ -71,7 +71,6 @@ jobs:
     - name: Configure the 'crave' environment
       run: |
         echo "DCDEVSPACE status: ${DCDEVSPACE}"
-        mkdir -p $PROJECTFOLDER/.repo/manifests
         if [[ "${DCDEVSPACE}" == "1" ]]; then
           echo 'No need to set up crave, we are already running in devspace!'
         else
@@ -81,14 +80,6 @@ jobs:
           envsubst < ${PWD}/crave.conf.sample >> ${PWD}/crave.conf
           rm -rf ${PWD}/crave.conf.sample
           cp crave.conf $PROJECTFOLDER
-        fi
-        if [[ -z "${{ secrets.CUSTOM_YAML }}" ]]; then
-          cp configs/crave/crave.yaml.aosp $PROJECTFOLDER/.repo/manifests/crave.yaml
-          echo "No Custom Configuration Found, Using Template!"
-        else
-          touch $PROJECTFOLDER/.repo/manifests/crave.yaml || true
-          echo "${{ secrets.CUSTOM_YAML }}" > $PROJECTFOLDER/.repo/manifests/crave.yaml
-          echo "Custom Configuration Found!"
         fi
         echo "Displaying crave binary location(s)"
         whereis crave
