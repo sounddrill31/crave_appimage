@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Create a project folder
-    - name: Create Project Folders
+    - name: Create Project Folder
       run: |
         echo "DCDEVSPACE status: ${DCDEVSPACE}"
         if [[ "${DCDEVSPACE}" != "1" ]]; then
@@ -94,6 +94,10 @@ jobs:
     - name: Create AppImage with Dependencies (Linux)
       if: runner.os == 'Linux'
       run: |
+          #Install deps
+          sudo apt update
+          sudo apt install dos2unix -y
+
           export ARCH="$(uname -m)"
           export VERSION=test 
           export APP=Crave
