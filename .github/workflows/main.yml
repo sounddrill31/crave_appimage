@@ -98,9 +98,10 @@ jobs:
           export VERSION=test 
           export APP=Crave
 
-          # Prepare AppDir with our desktop file
+          # Prepare AppDir with our desktop file 
           mkdir -p AppDir
           mv *.desktop AppDir
+          dos2unix AppDir/*.desktop # This avoids potential issues from contributors using windows
 
           ( export ARCH="$(uname -m)" # Just to be double sure
             cd AppDir
