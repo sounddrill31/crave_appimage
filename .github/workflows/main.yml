@@ -113,7 +113,7 @@ jobs:
             cd AppDir
             wget "https://raw.githubusercontent.com/VHSgunzo/sharun/refs/heads/main/lib4bin" -O ./lib4bin
             chmod +x ./lib4bin
-            xvfb-run -a -- ./lib4bin -k -o -s -y -p -v -e -r -k --python-pkg sharun  --python-ver 3.12 \
+            xvfb-run -a -- ./lib4bin -k -o -s -y -p -v -e -r -k --python-ver 3.12 sharun \
               /usr/bin/crave \
               /lib/$ARCH-linux-gnu/libdl* \
               /lib/$ARCH-linux-gnu/libz* \
