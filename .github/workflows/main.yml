@@ -90,6 +90,53 @@ jobs:
           echo "${{ secrets.CUSTOM_YAML }}" > $PROJECTFOLDER/.repo/manifests/crave.yaml
           echo "Custom Configuration Found!"
         fi
+        echo "Displaying crave binary location(s)"
+        whereis crave
+        echo "Displaying ldd output: "
+         ldd $(whereis crave)
       env:
         CRAVE_USERNAME: ${{  secrets.CRAVE_USERNAME  }}
         CRAVE_TOKEN: ${{  secrets.CRAVE_TOKEN  }}
+      
+    - name: Create AppImage with Dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: |
+          export ARCH="$(uname -m)"
+          export VERSION=test
+          export APP=Crave
+
+          ( export ARCH="$(uname -m)" # Just to be double sure
+            cd AppDir
+            wget "https://raw.githubusercontent.com/VHSgunzo/sharun/refs/heads/main/lib4bin" -O ./lib4bin
+            chmod +x ./lib4bin
+            xvfb-run -a -- ./lib4bin -p -v -e -r -k -w \
+              /usr/bin/crave \
+              /usr/lib/$ARCH-linux-gnu/libdl* \
+              /usr/lib/$ARCH-linux-gnu/libz* \
+              /usr/lib/$ARCH-linux-gnu/libpthread* \
+              /usr/lib/$ARCH-linux-gnu/libc* \
+              /lib64/ld-linux-$ARCH*
+
+            ln ./sharun ./AppRun
+            ./sharun -g
+          )
+
+          wget "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$ARCH.AppImage" -O appimagetool
+          chmod +x ./appimagetool
+          ./appimagetool --comp zstd \
+            --mksquashfs-opt -Xcompression-level --mksquashfs-opt 22 \
+            -n "$PWD"/AppDir "$PWD"/"$APP"-"$VERSION"-anylinux-"$ARCH".AppImage
+
+          # List the generated AppImage
+          ls -l Crave*.AppImage
+
+    - name: Upload Release Asset (Linux/AppImage)
+      if: runner.os == 'linux'
+      uses: softprops/action-gh-release@v1
+      with:
+        target_commitish: ${{ github.ref_name }}
+        files: Crave*.AppImage
+        name: Crave-${{ github.ref_name }}.AppImage
+        tag_name: ${{ github.run_id }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
