@@ -134,6 +134,9 @@ jobs:
           # List the generated AppImage
           ls -l Crave*.AppImage
 
+          chmod +x Crave*.AppImage
+          ./Crave*.AppImage crave || true
+
     - name: Upload Release Asset (Linux/AppImage)
       if: runner.os == 'linux'
       uses: softprops/action-gh-release@v1
