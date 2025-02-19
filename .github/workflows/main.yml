@@ -1,0 +1,95 @@
+#
+# Copyright (C) 2024 Antonino Scordino
+# Copyright (C) 2024 Souhrud Reddy
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+name: Crave Builder
+on:
+  workflow_dispatch:
+jobs:
+  prepare:
+    name: Prepare for Building
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check-out to repository
+      uses: actions/checkout@v4
+
+    - name: Check Credentials
+      run: |
+        if [[ -z "${{ secrets.CRAVE_TOKEN }}" || -z "${{ secrets.CRAVE_USERNAME }}" ]]; then
+          echo "Crave Credentials Not Configured! Exiting..."
+          exit 1
+        fi
+        bash scripts/env-checker.sh
+
+      # Generate 'git' credential in base of the workflow's author.
+    - name: Set-up 'git' credential(s)
+      run: |
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+
+  build:
+    needs: prepare
+    name: Build using foss.crave.io
+      # Change this to self-hosted after setting up devspace as github actions runner
+    runs-on: ubuntu-latest
+    steps:
+      # Create a project folder
+    - name: Create Project Folders
+      run: |
+        echo "DCDEVSPACE status: ${DCDEVSPACE}"
+        if [[ "${DCDEVSPACE}" != "1" ]]; then
+          
+          curl -s https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash -s -- 
+
+          mkdir -p ${HOME}/bin/
+          mv ${PWD}/crave ${HOME}/bin/ 
+          sudo ln -sf /home/${USER}/bin/crave /usr/bin/crave; sudo chmod +x /usr/bin/crave 
+
+          echo "Symlinking devspace folder"
+          mkdir -p devspace
+          sudo mkdir -p /crave-devspaces
+          sudo ln -sf ${pwd}/devspace /crave-devspaces
+          sudo chmod 777 /crave-devspaces
+        else
+          echo "We are already running in devspace... Skipping Symlinks"
+        fi
+
+      # Check-out in order to access the repository's files.
+    - name: Check-out to repository
+      uses: actions/checkout@v4
+      
+      # Generate 'git' credential in base of the workflow's author.
+    - name: Set-up 'git' credential(s)
+      run: |
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+
+      # Download and configure 'crave'.
+    - name: Configure the 'crave' environment
+      run: |
+        echo "DCDEVSPACE status: ${DCDEVSPACE}"
+        mkdir -p $PROJECTFOLDER/.repo/manifests
+        if [[ "${DCDEVSPACE}" == "1" ]]; then
+          echo 'No need to set up crave, we are already running in devspace!'
+        else
+          curl -s https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash -s --
+          mv ${PWD}/crave ${HOME}/bin/
+          sudo ln -sf /home/${USER}/bin/crave /usr/bin/crave
+          envsubst < ${PWD}/crave.conf.sample >> ${PWD}/crave.conf
+          rm -rf ${PWD}/crave.conf.sample
+          cp crave.conf $PROJECTFOLDER
+        fi
+        if [[ -z "${{ secrets.CUSTOM_YAML }}" ]]; then
+          cp configs/crave/crave.yaml.aosp $PROJECTFOLDER/.repo/manifests/crave.yaml
+          echo "No Custom Configuration Found, Using Template!"
+        else
+          touch $PROJECTFOLDER/.repo/manifests/crave.yaml || true
+          echo "${{ secrets.CUSTOM_YAML }}" > $PROJECTFOLDER/.repo/manifests/crave.yaml
+          echo "Custom Configuration Found!"
+        fi
+      env:
+        CRAVE_USERNAME: ${{  secrets.CRAVE_USERNAME  }}
+        CRAVE_TOKEN: ${{  secrets.CRAVE_TOKEN  }}
