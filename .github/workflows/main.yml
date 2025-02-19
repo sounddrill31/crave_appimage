@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-name: Crave Builder
+name: AppImage Builder
 on:
   workflow_dispatch:
 jobs:
@@ -32,7 +32,7 @@ jobs:
 
   build:
     needs: prepare
-    name: Build using foss.crave.io
+    name: Build AppImage
       # Change this to self-hosted after setting up devspace as github actions runner
     runs-on: ubuntu-latest
     steps:
