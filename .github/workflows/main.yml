@@ -13,10 +13,7 @@ on:
 jobs:
   prepare:
     name: Prepare for Building
-    runs-on: ${{ matrix.os }}
-    strategy:
-          matrix:
-            os: [ubuntu-24.04,ubuntu-24.04-arm]
+    runs-on: ubuntu-latest
     steps:
     - name: Check-out to repository
       uses: actions/checkout@v4
@@ -37,9 +34,11 @@ jobs:
 
   build:
     needs: prepare
-    name: Prepare Static 
-      # Change this to self-hosted after setting up devspace as github actions runner
-    runs-on: ubuntu-latest
+    name: Prepare Static
+    runs-on: ${{ matrix.os }}
+    strategy:
+          matrix:
+            os: [ubuntu-24.04,ubuntu-24.04-arm]
     steps:
       # Create a project folder
     - name: Create Project Folder
