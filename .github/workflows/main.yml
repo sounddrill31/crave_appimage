@@ -93,12 +93,13 @@ jobs:
 
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.13.2' 
+        python-version: '3.13.2'
+        cache: 'pip' # caching pip dependencies
       
     - name: Create Static Image (Linux)
       if: runner.os == 'Linux'
       run: |
-          pip3 install staticx
+          pip3 install setuptools staticx patchelf-wrapper
 
           cp ${HOME}/bin/crave .
 
