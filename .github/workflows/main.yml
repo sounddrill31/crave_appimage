@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-name: AppImage Builder
+name: Static Crave Builder
 on:
   workflow_dispatch:
   push:
@@ -34,7 +34,7 @@ jobs:
 
   build:
     needs: prepare
-    name: Build AppImage
+    name: Prepare Static 
       # Change this to self-hosted after setting up devspace as github actions runner
     runs-on: ubuntu-latest
     steps:
@@ -90,60 +90,31 @@ jobs:
       env:
         CRAVE_USERNAME: ${{  secrets.CRAVE_USERNAME  }}
         CRAVE_TOKEN: ${{  secrets.CRAVE_TOKEN  }}
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.14' 
       
-    - name: Create AppImage with Dependencies (Linux)
+    - name: Create Static Image (Linux)
       if: runner.os == 'Linux'
       run: |
-          #Install deps
-          sudo apt update
-          sudo apt install dos2unix -y
+          pip3 install staticx
 
-          export ARCH="$(uname -m)"
-          export VERSION=test 
-          export APP=Crave
+          cp ${HOME}/bin/crave .
 
-          # Prepare AppDir with our desktop file 
-          mkdir -p AppDir
-          mv *.desktop AppDir
-          mv *bolt*.png AppDir/bolt.png
 
-          dos2unix AppDir/*.desktop # This avoids potential issues from contributors using windows
+          staticx --loglevel DEBUG crave --strip "crave-static-$(crave version | awk '{print $2}')-$(date "+%y-%m-%d")-$(uname -m).bin"
 
-          ( export ARCH="$(uname -m)" # Just to be double sure
-            cd AppDir
-            wget "https://raw.githubusercontent.com/VHSgunzo/sharun/refs/heads/main/lib4bin" -O ./lib4bin
-            chmod +x ./lib4bin
-            xvfb-run -a -- ./lib4bin -s -y -p -v -e -r -k -w --python-ver 3.12 \
-              /usr/bin/crave \
-              /lib/$ARCH-linux-gnu/libdl* \
-              /lib/$ARCH-linux-gnu/libz* \
-              /lib/$ARCH-linux-gnu/libpthread* \
-              /lib/$ARCH-linux-gnu/libc.* \
-              /lib64/ld-linux-$ARCH*
-
-            ln ./sharun ./AppRun
-            ./sharun -g
-          )
-
-          wget "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$ARCH.AppImage" -O appimagetool
-          chmod +x ./appimagetool
-          ./appimagetool --comp zstd \
-            --mksquashfs-opt -Xcompression-level --mksquashfs-opt 22 \
-            -n "$PWD"/AppDir "$PWD"/"$APP"-"$VERSION"-anylinux-"$ARCH".AppImage
-
-          # List the generated AppImage
-          ls -l Crave*.AppImage
-
-          chmod +x Crave*.AppImage
-          ./Crave*.AppImage crave || true
+          chmod +x crave*.bin
+          ./crave*.bin || true
 
     - name: Upload Release Asset (Linux/AppImage)
       if: runner.os == 'linux'
       uses: softprops/action-gh-release@v1
       with:
         target_commitish: ${{ github.ref_name }}
-        files: Crave*.AppImage
-        name: Crave-${{ github.ref_name }}.AppImage
+        files: crave*.bin
+        name: Crave-${{ github.ref_name }}
         tag_name: ${{ github.run_id }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
