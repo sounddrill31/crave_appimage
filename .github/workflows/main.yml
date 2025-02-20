@@ -101,7 +101,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
           pip3 install --upgrade pip setuptools
-          pip3 install staticx patchelf-wrapper
+          pip3 install scons staticx patchelf-wrapper
 
           cp ${HOME}/bin/crave .
 
