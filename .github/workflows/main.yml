@@ -9,7 +9,7 @@ name: Static Crave Builder
 on:
   workflow_dispatch:
   push:
-    branches: main
+    branches: staticx
 jobs:
   prepare:
     name: Prepare for Building
