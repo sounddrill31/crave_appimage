@@ -139,13 +139,15 @@ jobs:
           chmod +x Crave*.AppImage
           ./Crave*.AppImage crave || true
 
+          mv Crave*.AppImage crave-appimage-$(crave version | awk '{print $2}')-$(date "+%y-%m-%d")-$(uname -m).AppImage
+
     - name: Upload Release Asset (Linux/AppImage)
       if: runner.os == 'linux'
       uses: softprops/action-gh-release@v1
       with:
         target_commitish: ${{ github.ref_name }}
-        files: Crave*.AppImage
-        name: Crave-${{ github.ref_name }}.AppImage
+        files: crave*.AppImage
+        name: Crave.AppImage
         tag_name: ${{ github.run_id }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
